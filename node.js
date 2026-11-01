@@ -1,1 +1,7 @@
-
+{
+  "name": "ci-demo-app",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'Building application...'"
+  }
+}
