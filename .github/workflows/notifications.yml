@@ -1,0 +1,40 @@
+name: Case 6 Notifications
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Build
+        run: |
+          echo "Сборка приложения..."
+          npm run build --if-present
+
+      - name: Send Telegram notification on Success
+        if: success()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            ✅ Сборка успешно завершена!
+            Репозиторий: ${{ github.repository }}
+            Коммит: ${{ github.sha }}
+            Автор: ${{ github.actor }}
+
+      - name: Send Telegram notification on Failure
+        if: failure()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            ❌ Сборка провалена!
+            Репозиторий: ${{ github.repository }}
+            Коммит: ${{ github.sha }}
