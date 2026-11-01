@@ -1,0 +1,46 @@
+name: Case 10 Database Migrations Automation
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  database-migration:
+    name: Apply Flyway Migrations
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: app_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres_secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Run Flyway Info (Pre-migration status)
+        uses: docker://flyway/flyway:10
+        with:
+          args: -url=jdbc:postgresql://postgres:5432/app_db -user=postgres -password=postgres_secret -locations=filesystem:sql info
+
+      - name: Execute Flyway Migrations
+        uses: docker://flyway/flyway:10
+        with:
+          args: -url=jdbc:postgresql://postgres:5432/app_db -user=postgres -password=postgres_secret -locations=filesystem:sql migrate
+
+      - name: Verify Applied Migrations
+        uses: docker://flyway/flyway:10
+        with:
+          args: -url=jdbc:postgresql://postgres:5432/app_db -user=postgres -password=postgres_secret -locations=filesystem:sql info
