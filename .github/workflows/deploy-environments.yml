@@ -1,0 +1,57 @@
+name: Case 8 Multi-Environment Deployment
+
+on:
+  push:
+    branches:
+      - develop
+      - staging
+      - main
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run Tests
+        run: echo "Unit testing passed successfully."
+
+  deploy-dev:
+    name: Deploy to Development
+    needs: test
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: development
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy step
+        run: |
+          echo "Развертывание на окружение DEVELOPMENT завершено."
+          echo "URL: https://dev.example.internal"
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: test
+    if: github.ref == 'refs/heads/staging'
+    environment:
+      name: staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy step
+        run: |
+          echo "Развертывание на тестовое окружение STAGING завершено."
+          echo "URL: https://staging.example.internal"
+
+  deploy-prod:
+    name: Deploy to Production
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy step
+        run: |
+          echo "Развертывание на боевое окружение PRODUCTION завершено."
+          echo "URL: https://example.com"
