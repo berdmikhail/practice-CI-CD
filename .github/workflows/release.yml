@@ -1,0 +1,33 @@
+name: Case 7 Release Creation
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Application and Artifact
+        run: |
+          mkdir -p dist
+          echo "Release application bundle" > dist/app.txt
+          tar -czf release-artifact.tar.gz dist/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            ## Изменения в релизе ${{ github.ref_name }}
+            - Автоматическая сборка артефакта
+            - Готовый архив приложения готов к загрузке
+          files: release-artifact.tar.gz
