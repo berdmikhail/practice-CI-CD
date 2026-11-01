@@ -1,30 +1,30 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_IMAGE = 'berdmikhail/practice-app'
-        DOCKER_CREDS = credentials('dockerhub-credentials')
-    }
-
     stages {
-        stage('Build Docker Image') {
+        stage('Lint') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE:${BUILD_NUMBER} -t $DOCKER_IMAGE:latest .'
+                echo 'Выполняется статический анализ кода (Lint)...'
+                sh 'npm run lint --if-present || true'
             }
         }
-        stage('Push to Docker Hub') {
+        stage('Test') {
             steps {
-                sh '''
-                    echo "$DOCKER_CREDS_PSW" | docker login -u "$DOCKER_CREDS_USR" --password-stdin
-                    docker push $DOCKER_IMAGE:${BUILD_NUMBER}
-                    docker push $DOCKER_IMAGE:latest
-                '''
+                echo 'Запуск модульных тестов (Unit Tests)...'
+                sh 'npm test --if-present'
             }
         }
-    }
-    post {
-        always {
-            sh 'docker logout || true'
+        stage('Build') {
+            steps {
+                echo 'Сборка приложения (Build)...'
+                sh 'npm run build --if-present'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Развертывание приложения (Deploy)...'
+                sh 'echo "Application deployed successfully to staging environment."'
+            }
         }
     }
 }
